@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>計測工学 赤字フラッシュカード</title>
+    <meta
+      name="description"
+      content="計測工学 keisoku.pdf の赤字語と test.pdf 対策用フラッシュカード"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="学習メニュー">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <h1>計測工学 赤字カード</h1>
+            <p>keisoku.pdf の赤字語 + test.pdf 対策</p>
+          </div>
+        </div>
+        <div class="stats">
+          <span id="cardCount">0 cards</span>
+          <span id="progressCount">0 learned</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="controls" aria-label="カード操作">
+          <label class="search">
+            <span>検索</span>
+            <input id="searchInput" type="search" placeholder="例: SI, 誤差, 校正" />
+          </label>
+
+          <div class="segmented" role="tablist" aria-label="カード種別">
+            <button class="segment active" data-filter="all" type="button">全て</button>
+            <button class="segment" data-filter="test" type="button">テスト重点</button>
+            <button class="segment" data-filter="red" type="button">赤字語</button>
+            <button class="segment" data-filter="calc" type="button">計算</button>
+          </div>
+
+          <div class="button-grid">
+            <button id="shuffleBtn" class="tool-button" type="button">シャッフル</button>
+            <button id="resetBtn" class="tool-button" type="button">進捗リセット</button>
+          </div>
+
+          <div class="list-panel">
+            <div class="list-title">出題一覧</div>
+            <ol id="cardList"></ol>
+          </div>
+        </aside>
+
+        <section class="study-area" aria-live="polite">
+          <article class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+              <div class="card-meta">
+                <span id="tagText">赤字語</span>
+                <span id="pageText">slide</span>
+              </div>
+              <p class="prompt" id="promptText"></p>
+              <div class="hint-box" id="hintText"></div>
+            </div>
+            <div class="card-face card-back">
+              <div class="answer-label">答え</div>
+              <h2 id="answerText"></h2>
+              <p id="detailText"></p>
+            </div>
+          </article>
+
+          <form class="answer-panel" id="answerForm">
+            <input id="answerInput" type="text" autocomplete="off" placeholder="答えを入力" />
+            <button type="submit">判定</button>
+          </form>
+          <div class="feedback" id="feedbackText"></div>
+
+          <div class="nav-row">
+            <button id="prevBtn" class="nav-button" type="button">前</button>
+            <button id="flipBtn" class="primary-button" type="button">めくる</button>
+            <button id="knownBtn" class="nav-button" type="button">覚えた</button>
+            <button id="nextBtn" class="nav-button" type="button">次</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -874,13 +874,17 @@ const cards = [
   },
 ];
 
+const savedCards = JSON.parse(
+  localStorage.getItem("savedCards") || localStorage.getItem("learnedCards") || "[]"
+);
+
 const state = {
   filter: "all",
   query: "",
   order: cards.map((_, index) => index),
   current: 0,
   flipped: false,
-  learned: new Set(JSON.parse(localStorage.getItem("learnedCards") || "[]")),
+  saved: new Set(savedCards),
 };
 
 const els = {
@@ -898,6 +902,8 @@ const els = {
   count: document.getElementById("cardCount"),
   progress: document.getElementById("progressCount"),
   search: document.getElementById("searchInput"),
+  flip: document.getElementById("flipBtn"),
+  save: document.getElementById("saveBtn"),
 };
 
 function normalize(value) {
@@ -923,7 +929,8 @@ function filteredOrder() {
       state.filter === "all" ||
       (state.filter === "red" && card.tags.includes("red")) ||
       (state.filter === "test" && card.tags.includes("test")) ||
-      (state.filter === "calc" && card.tags.includes("calc"));
+      (state.filter === "calc" && card.tags.includes("calc")) ||
+      (state.filter === "saved" && state.saved.has(card.answer));
     if (!tagMatch) return false;
     if (!q) return true;
     return normalize(
@@ -943,8 +950,9 @@ function render() {
   const order = filteredOrder();
   const card = currentCard();
   els.count.textContent = `${order.length} cards`;
-  els.progress.textContent = `${state.learned.size} learned`;
+  els.progress.textContent = `${state.saved.size} saved`;
   els.card.classList.toggle("flipped", state.flipped);
+  els.flip.textContent = state.flipped ? "次" : "めくる";
   els.list.innerHTML = "";
 
   order.forEach((cardIndex, position) => {
@@ -952,7 +960,7 @@ function render() {
     const li = document.createElement("li");
     li.className = position === state.current ? "active" : "";
     const mark = document.createElement("span");
-    mark.textContent = state.learned.has(cardItem.answer) ? "✓" : "•";
+    mark.textContent = state.saved.has(cardItem.answer) ? "★" : "•";
     const button = document.createElement("button");
     button.type = "button";
     const listKind = cardItem.tags.includes("test")
@@ -979,6 +987,7 @@ function render() {
     els.detail.textContent = "";
     els.tag.textContent = "";
     els.page.textContent = "";
+    els.save.textContent = "保存";
     return;
   }
 
@@ -988,10 +997,11 @@ function render() {
   els.detail.textContent = card.detail;
   els.tag.textContent = card.tags.includes("red") ? "赤字語" : card.tags.includes("calc") ? "計算対策" : "補助";
   els.page.textContent = card.pages;
+  els.save.textContent = state.saved.has(card.answer) ? "保存済み" : "保存";
 }
 
-function saveLearned() {
-  localStorage.setItem("learnedCards", JSON.stringify([...state.learned]));
+function saveCards() {
+  localStorage.setItem("savedCards", JSON.stringify([...state.saved]));
 }
 
 function move(delta) {
@@ -1004,20 +1014,28 @@ function move(delta) {
   render();
 }
 
-document.getElementById("flipBtn").addEventListener("click", () => {
-  state.flipped = !state.flipped;
+els.flip.addEventListener("click", () => {
+  if (state.flipped) {
+    move(1);
+    return;
+  }
+  state.flipped = true;
   render();
 });
 
 document.getElementById("prevBtn").addEventListener("click", () => move(-1));
 document.getElementById("nextBtn").addEventListener("click", () => move(1));
 
-document.getElementById("knownBtn").addEventListener("click", () => {
+els.save.addEventListener("click", () => {
   const card = currentCard();
   if (!card) return;
-  state.learned.add(card.answer);
-  saveLearned();
-  move(1);
+  if (state.saved.has(card.answer)) {
+    state.saved.delete(card.answer);
+  } else {
+    state.saved.add(card.answer);
+  }
+  saveCards();
+  render();
 });
 
 document.getElementById("shuffleBtn").addEventListener("click", () => {
@@ -1031,8 +1049,8 @@ document.getElementById("shuffleBtn").addEventListener("click", () => {
 });
 
 document.getElementById("resetBtn").addEventListener("click", () => {
-  state.learned.clear();
-  saveLearned();
+  state.saved.clear();
+  saveCards();
   render();
 });
 
@@ -1063,10 +1081,6 @@ els.form.addEventListener("submit", (event) => {
   const ok = actual.length > 0 && expected.some((value) => value === actual || value.includes(actual));
   els.feedback.className = ok ? "feedback good" : "feedback bad";
   els.feedback.textContent = ok ? "正解" : `もう一度。答えは「${card.answer}」`;
-  if (ok) {
-    state.learned.add(card.answer);
-    saveLearned();
-  }
   state.flipped = true;
   render();
 });
@@ -1077,8 +1091,12 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") move(-1);
   if (event.key === " ") {
     event.preventDefault();
-    state.flipped = !state.flipped;
-    render();
+    if (state.flipped) {
+      move(1);
+    } else {
+      state.flipped = true;
+      render();
+    }
   }
 });
 

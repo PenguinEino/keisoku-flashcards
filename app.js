@@ -955,7 +955,12 @@ function render() {
     mark.textContent = state.learned.has(cardItem.answer) ? "✓" : "•";
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = cardItem.answer;
+    const listKind = cardItem.tags.includes("test")
+      ? "テスト重点"
+      : cardItem.tags.includes("red")
+        ? "赤字語"
+        : "補助";
+    button.textContent = `カード ${position + 1} / ${listKind} / ${cardItem.pages}`;
     button.addEventListener("click", () => {
       state.current = position;
       state.flipped = false;
